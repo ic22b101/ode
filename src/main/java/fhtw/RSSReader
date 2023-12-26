@@ -1,0 +1,46 @@
+package fhtw;
+
+import com.rometools.fetcher.FeedFetcher;
+import com.rometools.fetcher.impl.HttpURLFeedFetcher;
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndFeed;
+
+import java.net.URL;
+import java.util.List;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.safety.Whitelist;
+
+public class RSSReader {
+
+    public void readAndPrintRSSFeed() {
+        String feedUrl = "https://www.derstandard.at/rss";
+
+        try {
+            URL url = new URL(feedUrl);
+            FeedFetcher feedFetcher = new HttpURLFeedFetcher();
+            SyndFeed feed = feedFetcher.retrieveFeed(url);
+
+            List<SyndEntry> entries = feed.getEntries();
+
+            for (SyndEntry entry : entries) {
+                System.out.println("Title: " + entry.getTitle());
+                System.out.println("Link: " + entry.getLink());
+                System.out.println("Published Date: " + entry.getPublishedDate());
+
+                // Clean HTML tags from description
+                String cleanedDescription = cleanHtmlTags(entry.getDescription().getValue());
+                System.out.println("Description: " + cleanedDescription);
+
+                System.out.println("------------------------------");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String cleanHtmlTags(String html) {
+        Document document = Jsoup.parse(html);
+        return Jsoup.clean(document.body().html(), Whitelist.none());
+    }
+}
